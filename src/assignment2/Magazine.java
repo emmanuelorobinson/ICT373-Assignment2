@@ -209,4 +209,5 @@ public class Magazine implements Serializable {
             }
         }
         return null;
+    }
 }
