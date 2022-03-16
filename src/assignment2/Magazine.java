@@ -194,4 +194,19 @@ public class Magazine implements Serializable {
         }
         return null;
     }
+
+    /**
+     * Gets customer by name
+     * 
+     * @param name
+     * @return customer
+     */
+
+    public Customer getCustomerByName(String name) {
+        for (Customer customer : customerList) {
+            if (customer.getName().equals(name)) {
+                return (Customer) customer;
+            }
+        }
+        return null;
 }
