@@ -11,14 +11,17 @@ import java.io.Serializable;
  *
  * @author 33961412
  */
-public class MangazineService implements Serializable {
+public class MagazineService implements Serializable {
     
     private Magazine magazine = new Magazine();
     private Subscription subscription = new Subscription();
 
-    public MangazineService(Magazine magazine, Subscription subscription) {
+    public MagazineService(Magazine magazine, Subscription subscription) {
         this.magazine = magazine;
         this.subscription = subscription;
+    }
+
+    public MagazineService() {
     }
 
     public Magazine getMagazine() {
@@ -37,5 +40,36 @@ public class MangazineService implements Serializable {
         this.subscription = subscription;
     }
 
+    //get all supplements for a customer
+
+    public String getAllSupplements(int customerId) {
+        String supplements = "";
+
+        if (subscription.getSupplements(customerId).size() > 0) {
+
+            for (Supplement supplement : subscription.getSupplements(customerId)) {
+                supplements += supplement.getName() + "\n";
+            }
+        }
+        return supplements;
+    }
+
+    public String getAllCustomersNames() {
+        String customers = "";
+
+        for (Customer customer : magazine.getCustomerList()) {
+            customers += customer.getName() + "\n";
+        }
+        return customers;
+    }
+
+    public String getSupplementsName() {
+        String supplements = "";
+
+        for (Supplement supplement : magazine.getSupplements()) {
+            supplements += supplement.getName() + "\n";
+        }
+        return supplements;
+    }
 
 }

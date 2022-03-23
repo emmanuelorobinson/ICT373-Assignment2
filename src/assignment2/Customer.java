@@ -117,4 +117,8 @@ public class Customer implements Serializable {
         }
         return false;
     }
+
+    public String printCustomer() {
+        return "Customer ID: " + customerId + "\n" + "Name: " + name + "\n" + "Email: " + email;
+    }
 }
