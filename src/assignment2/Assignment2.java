@@ -27,13 +27,11 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.FileChooser.ExtensionFilter;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
 /**
  *
@@ -49,13 +47,16 @@ public class Assignment2 extends Application {
     Scene scene;
     // Label selectedCustomer, lblName, lblAge, lblEnrolled;
     TextArea textEnrolled;
+    Text lblHeading;
     Button btnManageUnits, btnSiblings, btnNewCustomer, btnUpdateCustomer, btnNewEnrolled, btnCreateNewCustomer;
     CheckBox chkCustomerType, chkNewCustomerType;
     ComboBox combo_box;
     TextField txtCustomerName, txtCustomerAge, txtNewCustomerName, txtNewCustomerEmail;
     ListView<String> enrollUnits;
-
     Alert alert = new Alert(AlertType.NONE);
+
+    GridPane customerPane;
+
 
     EventHandler<ActionEvent> btnNewCustomerClicked = new EventHandler<ActionEvent>() {
         public void handle(ActionEvent e) {
@@ -84,8 +85,9 @@ public class Assignment2 extends Application {
             } else {
                 GridPane emptyGrid = new GridPane();
                 root.setCenter(emptyGrid);
-                GridPane customerPane = createCustomerPaneVBox();
-                root.setLeft(customerPane);
+                //GridPane customerPane = createCustomerPaneVBox();
+                //root.setLeft(customerPane);
+                combo_box.setItems(FXCollections.observableArrayList(magazine.getMagazine().getCustomerNames()));
                 System.out.println("Customer created with " + c.printCustomer());
             }
 
@@ -99,7 +101,7 @@ public class Assignment2 extends Application {
             txtCustomerName.setText("" + customer.getName());
             txtCustomerAge.setText("" + customer.getEmail());
             textEnrolled.setText("...loading supplements...");
-            textEnrolled.setText(magazine.getAllSupplements(customer.getCustomerId()));
+            textEnrolled.setText(magazine.getSupplements(customer.getCustomerId()));
             if (customer instanceof PayingCustomer) {
                 chkCustomerType.setSelected(true);
             } else {
@@ -113,9 +115,10 @@ public class Assignment2 extends Application {
     public void start(Stage primaryStage) {
 
         root = new BorderPane();
-        GridPane customerPane = createCustomerPaneVBox();
+        customerPane = createCustomerPaneVBox();
+        GridPane openSavePane = createOpenSaveGridPane(primaryStage, root);
 
-        Text lblHeading = new Text("Unimanager program v2.0");
+        lblHeading = new Text("Unimanager program v2.0");
         lblHeading.setFont(Font.font("Arial", FontWeight.BOLD, 20));
 
         Text lblFooter = new Text("Think before you print - save this uni");
@@ -123,7 +126,7 @@ public class Assignment2 extends Application {
 
         root.setTop(lblHeading);
         root.setLeft(customerPane);
-        root.setBottom(lblFooter);
+        root.setBottom(openSavePane);
 
         scene = new Scene(root, 1000, 500);
 
@@ -161,7 +164,7 @@ public class Assignment2 extends Application {
 
         // column 1 controls
         combo_box = new ComboBox();
-        combo_box.setItems(FXCollections.observableArrayList(magazine.getAllCustomersNames()));
+        combo_box.setItems(FXCollections.observableArrayList(magazine.getCustomersNames()));
         combo_box.setOnAction(comboSelected);
         grid.add(combo_box, 1, 0);
 
@@ -198,6 +201,53 @@ public class Assignment2 extends Application {
 
         btnUpdateCustomer = new Button("Update");
         grid.add(btnUpdateCustomer, 1, 1);
+
+        return grid;
+    }
+
+    public GridPane createOpenSaveGridPane(Stage primaryStage, BorderPane bp) {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(0, 10, 0, 10));
+
+        //column 0 labels
+        File recordsDir = new File(System.getProperty("user.home"), "/uni/records");
+        if (!recordsDir.exists()) {
+            recordsDir.mkdirs();
+        }
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(recordsDir);
+        Button btnOpen = new Button("Open File");
+        btnOpen.setOnAction(e -> {
+            fileChooser.setTitle("Open Uni File");
+            fileChooser.getExtensionFilters().addAll(
+                   
+                    new ExtensionFilter("Magazine Files", "*.dat"),
+                    new ExtensionFilter("All Files", "*.*"));
+            File selectedFile = fileChooser.showOpenDialog(primaryStage);
+            if (selectedFile != null) {
+                magazine.readMagazineService(selectedFile);
+                customerPane = createCustomerPaneVBox();
+                lblHeading.setText(magazine.getMagazine().getTitle());
+                root.setLeft(customerPane);
+                root.setCenter(new GridPane());
+            }
+
+        });
+
+        Button btnSave = new Button("Save File");
+        btnSave.setOnAction(e -> {
+
+            File selectedFile = fileChooser.showSaveDialog(primaryStage);
+            if (selectedFile != null) {
+                magazine.writeMagazineService(selectedFile);
+            }
+
+        });
+
+        grid.add(btnOpen, 0, 0);
+        grid.add(btnSave, 1, 0);
 
         return grid;
     }
@@ -318,50 +368,15 @@ public class Assignment2 extends Application {
 
         MagazineService ms = new MagazineService(mag, sub);
 
-        try {
-            File kd = new File("kd.dat");
+        //save the magazine
+        File selectedFile = new File("magazine.dat");
+        ms.writeMagazineService(selectedFile);
 
-            FileOutputStream fos = new FileOutputStream(kd);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
+        // read the magazine
+        magazine = new MagazineService();
 
-            writeSerializedObject(oos, ms);
-
-            FileInputStream fis = new FileInputStream(kd);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-
-            Magazine newMag = new Magazine();
-            Subscription newSub = new Subscription();
-
-            MagazineService newMagService = readSerializedObject(ois);
-            newMag = newMagService.getMagazine();
-            newSub = newMagService.getSubscription();
-
-            System.out.println(newMag.getTitle());
-        } catch (Exception e) {
-            System.out.println("Error: " + e);
-        }
         launch(args);
 
     }
 
-    public static void writeSerializedObject(ObjectOutputStream oos, MagazineService mag) {
-        try {
-            oos.writeObject(mag);
-            oos.close();
-        } catch (Exception e) {
-            System.out.println("Error: " + e);
-        }
-    }
-
-    public static MagazineService readSerializedObject(ObjectInputStream ois) {
-        MagazineService mag = null;
-        try {
-            mag = (MagazineService) ois.readObject();
-            ois.close();
-        } catch (Exception e) {
-            System.out.println("Error: " + e);
-        }
-
-        return mag;
-    }
 }
