@@ -95,6 +95,16 @@ public class MagazineService implements Serializable {
         return supplements;
     }
 
+    public Supplement findSupplement(String supplementName) {
+        Supplement supplement = null;
+        try{
+            supplement = magazine.getSupplementByName(supplementName);
+        } catch (NullPointerException e) {
+            System.out.println("Error: " + e);
+        }
+        return supplement;
+    }
+
     public void writeMagazineService(File saveFile) {
         try {
             FileOutputStream fileOut = new FileOutputStream(saveFile);

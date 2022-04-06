@@ -48,12 +48,14 @@ public class Assignment2 extends Application {
     // Label selectedCustomer, lblName, lblAge, lblEnrolled;
     TextArea textEnrolled;
     Text lblHeading;
-    Button btnManageUnits, btnSiblings, btnNewCustomer, btnUpdateCustomer, btnNewEnrolled, btnCreateNewCustomer;
+    Button btnManageUnits, btnSiblings, btnNewCustomer, btnUpdateCustomer, btnNewEnrolled, btnCreateNewCustomer,
+            btnView, btnCreate, btnEdit, btnCreateNewSupplement;
     CheckBox chkCustomerType, chkNewCustomerType;
     ComboBox combo_box;
     TextField txtCustomerName, txtCustomerEmail, txtNewCustomerName, txtNewCustomerEmail;
+    TextField txtSupp, txtSuppName, txtSuppCost;
     // ListView<String> MagSupplements;
-    ListView<Supplement> MagSupplements;
+    ListView<String> MagSupplements;
     Alert alert = new Alert(AlertType.NONE);
 
     GridPane customerPane;
@@ -61,7 +63,33 @@ public class Assignment2 extends Application {
     EventHandler<ActionEvent> btnNewCustomerClicked = new EventHandler<ActionEvent>() {
         public void handle(ActionEvent e) {
 
-            root.setCenter(createNewCustomerPaneVBox());
+            root.setLeft(createNewCustomerPaneVBox());
+            root.setRight(createNewSupplementPaneVBox());
+
+        }
+    };
+
+    EventHandler<ActionEvent> btnNewSupplementCreate = new EventHandler<ActionEvent>() {
+        public void handle(ActionEvent e) {
+
+            String name = txtSuppName.getText();
+            int cost = Integer.parseInt(txtSuppCost.getText());
+
+            Supplement s;
+
+            s = new Supplement(name, cost);
+
+            // add supplement to magazine
+            if(magazine.getMagazine().addSupplement(s)) {
+                alert.setAlertType(AlertType.INFORMATION);
+                alert.setContentText("Supplement added to magazine");
+                alert.showAndWait();
+            }
+            else {
+                alert.setAlertType(AlertType.ERROR);
+                alert.setContentText("Supplement not added to magazine");
+                alert.showAndWait();
+            }
 
         }
     };
@@ -73,10 +101,10 @@ public class Assignment2 extends Application {
             String name = txtNewCustomerName.getText() != "" ? txtNewCustomerName.getText() : "Jon";
             String email = txtNewCustomerEmail.getText() != "" ? txtNewCustomerEmail.getText() : "email@email.com";
 
-            ObservableList<Supplement> supplements;
+            ObservableList<String> supplements;
 
             supplements = MagSupplements.getSelectionModel().getSelectedItems();
-            List<Supplement> subscripedTo = supplements.subList(0, supplements.size());
+            List<String> subscripedTo = supplements.subList(0, supplements.size());
 
             System.out.println(subscripedTo);
 
@@ -90,8 +118,10 @@ public class Assignment2 extends Application {
 
             } else {
 
-                for (Supplement s : subscripedTo) {
-                    magazine.getSubscription().addSupplement(c.getCustomerId(), s, magazine.getMagazine());
+                for (String s : subscripedTo) {
+                    Supplement tempSup = magazine.findSupplement(s);
+
+                    magazine.getSubscription().addSupplement(c.getCustomerId(), tempSup, magazine.getMagazine());
                 }
 
                 GridPane emptyGrid = new GridPane();
@@ -127,7 +157,7 @@ public class Assignment2 extends Application {
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(0, 10, 0, 10));
+        grid.setPadding(new Insets(10, 10, 10, 10));
 
         // column 0 labels
         Text lblCustomer = new Text("Customer");
@@ -198,27 +228,38 @@ public class Assignment2 extends Application {
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(0, 10, 0, 10));
+        grid.setPadding(new Insets(10, 10, 10, 10));
 
-        // column 0 labels
-        File recordsDir = new File(System.getProperty("user.home"), "/uni/records");
+        // get current working directory
+        File recordsDir = new File(System.getProperty("user.dir"));
+
         if (!recordsDir.exists()) {
             recordsDir.mkdirs();
         }
+
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(recordsDir);
+
         Button btnOpen = new Button("Open File");
+
         btnOpen.setOnAction(e -> {
+
             fileChooser.setTitle("Open Magazine Service File");
+
             fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Magazine Files", "*.dat"),
                     new ExtensionFilter("All Files", "*.*"));
+
             File selectedFile = fileChooser.showOpenDialog(primaryStage);
+
             if (selectedFile != null) {
+
                 magazine.readMagazineService(selectedFile);
-                customerPane = createCustomerPaneVBox();
+
+                customerPane = chooseModePane();
+
                 lblHeading.setText(magazine.getMagazine().getTitle());
-                root.setLeft(customerPane);
-                root.setCenter(new GridPane());
+
+                root.setTop(headingPane(lblHeading));
             }
 
         });
@@ -227,6 +268,7 @@ public class Assignment2 extends Application {
         btnSave.setOnAction(e -> {
 
             File selectedFile = fileChooser.showSaveDialog(primaryStage);
+
             if (selectedFile != null) {
                 magazine.writeMagazineService(selectedFile);
             }
@@ -243,7 +285,7 @@ public class Assignment2 extends Application {
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
-        grid.setPadding(new Insets(0, 10, 0, 10));
+        grid.setPadding(new Insets(10, 10, 10, 10));
 
         // column 0 labels
         Text lblCustomer = new Text("New Customer");
@@ -272,10 +314,10 @@ public class Assignment2 extends Application {
         txtNewCustomerEmail = new TextField();
         grid.add(txtNewCustomerEmail, 0, 4);
 
-        MagSupplements = new ListView<Supplement>();
+        MagSupplements = new ListView<String>();
         MagSupplements.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        // MagSupplements.setItems(FXCollections.createObservableList(magazine.getSupplementsName()));
-        MagSupplements.setItems(FXCollections.observableArrayList(magazine.getSups()));
+        MagSupplements.setItems(FXCollections.observableArrayList(magazine.getSupplementsName()));
+
         grid.add(MagSupplements, 0, 6);
 
         // GridPane subGrid = new GridPane();
@@ -291,6 +333,147 @@ public class Assignment2 extends Application {
         return grid;
     }
 
+    public GridPane createNewSupplementPaneVBox() {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(10, 800, 10, 30));
+
+        // column 0 labels
+        Text lblSuppText = new Text("New Supplement");
+        lblSuppText.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        grid.add(lblSuppText, 0, 0);
+
+        Text lblSuppName = new Text("Name:");
+        lblSuppName.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblSuppName, 0, 1);
+
+        Text lblSuppCost = new Text(" Weekly Cost:");
+        lblSuppCost.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblSuppCost, 0, 3);
+
+        txtSuppName = new TextField();
+        grid.add(txtSuppName, 0, 2);
+        txtSuppCost = new TextField();
+        grid.add(txtSuppCost, 0, 4);
+
+
+        btnCreateNewSupplement = new Button("Create");
+
+        btnCreateNewSupplement.setOnAction(btnNewSupplementCreate);
+        grid.add(btnCreateNewSupplement, 0, 5);
+
+        // grid.add(subGrid, 0, 7);
+        return grid;
+    }
+
+    public GridPane chooseModePane() {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(0, 10, 0, 0));
+
+        // column 0 labels
+        Text lblMode = new Text("Choose Mode:");
+        lblMode.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        grid.add(lblMode, 0, 0);
+
+        btnView = new Button("View");
+        btnView.setOnAction(btnViewModeClicked);
+        grid.add(btnView, 1, 0);
+
+        btnCreate = new Button("Create");
+        btnCreate.setOnAction(btnCreateModeClicked);
+        grid.add(btnCreate, 2, 0);
+
+        btnEdit = new Button("Edit");
+        btnEdit.setOnAction(btnEditModeClicked);
+        grid.add(btnEdit, 3, 0);
+
+        return grid;
+    }
+
+    public GridPane ViewOnlyPane() {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(0, 10, 0, 10));
+
+        Text lblSupp = new Text("List of Supplements");
+        lblSupp.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        grid.add(lblSupp, 0, 2);
+
+        // display list of supplements in the magazine
+        int count = 3;
+        for (String s : magazine.getSupplementsName()) {
+            Text t = new Text(s);
+
+            t.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+            grid.add(t, 0, count);
+
+            count++;
+        }
+
+        Text lblCusList = new Text("List of Customers");
+        lblCusList.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        grid.add(lblCusList, 0, count);
+
+        count++;
+
+        // display list of customers in the magazine
+        for (String c : magazine.getCustomersNames()) {
+            Text t = new Text(c);
+
+            t.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+            grid.add(t, 0, count);
+
+            count++;
+        }
+
+        return grid;
+
+    }
+
+    EventHandler<ActionEvent> btnEditModeClicked = new EventHandler<ActionEvent>() {
+        @Override
+        public void handle(ActionEvent event) {
+            root.setLeft(createCustomerPaneVBox());
+            root.setRight(null);
+        }
+    };
+
+    EventHandler<ActionEvent> btnViewModeClicked = new EventHandler<ActionEvent>() {
+        @Override
+        public void handle(ActionEvent event) {
+            root.setLeft(ViewOnlyPane());
+            root.setRight(null);
+        }
+    };
+
+    EventHandler<ActionEvent> btnCreateModeClicked = new EventHandler<ActionEvent>() {
+        @Override
+        public void handle(ActionEvent event) {
+            root.setLeft(createNewCustomerPaneVBox());
+            root.setRight(createNewSupplementPaneVBox());
+            
+        }
+    };
+
+    public GridPane headingPane(Text lblHeading) {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(0, 10, 0, 10));
+
+        lblHeading = new Text("Welcome to the Supplement Magazine");
+        lblHeading.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        grid.add(lblHeading, 0, 0);
+
+        grid.add(chooseModePane(), 0, 1);
+
+        return grid;
+    }
+
     @Override
     public void start(Stage primaryStage) {
 
@@ -301,14 +484,10 @@ public class Assignment2 extends Application {
         lblHeading = new Text("Magazine Service Information System");
         lblHeading.setFont(Font.font("Arial", FontWeight.BOLD, 20));
 
-        Text lblFooter = new Text("Think before you print - save this uni");
-        lblFooter.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-
-        root.setTop(lblHeading);
-        root.setLeft(customerPane);
+        root.setTop(headingPane(lblHeading));
         root.setBottom(openSavePane);
 
-        scene = new Scene(root, 1000, 500);
+        scene = new Scene(root, 1000, 600);
 
         primaryStage.setTitle("Magazine Service");
         primaryStage.setScene(scene);
