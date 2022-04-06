@@ -51,12 +51,12 @@ public class Assignment2 extends Application {
     Button btnManageUnits, btnSiblings, btnNewCustomer, btnUpdateCustomer, btnNewEnrolled, btnCreateNewCustomer;
     CheckBox chkCustomerType, chkNewCustomerType;
     ComboBox combo_box;
-    TextField txtCustomerName, txtCustomerAge, txtNewCustomerName, txtNewCustomerEmail;
-    ListView<String> enrollUnits;
+    TextField txtCustomerName, txtCustomerEmail, txtNewCustomerName, txtNewCustomerEmail;
+    // ListView<String> MagSupplements;
+    ListView<Supplement> MagSupplements;
     Alert alert = new Alert(AlertType.NONE);
 
     GridPane customerPane;
-
 
     EventHandler<ActionEvent> btnNewCustomerClicked = new EventHandler<ActionEvent>() {
         public void handle(ActionEvent e) {
@@ -69,24 +69,34 @@ public class Assignment2 extends Application {
     EventHandler<ActionEvent> btnNewCustomerCreate = new EventHandler<ActionEvent>() {
         public void handle(ActionEvent e) {
             Customer c;
+
             String name = txtNewCustomerName.getText() != "" ? txtNewCustomerName.getText() : "Jon";
             String email = txtNewCustomerEmail.getText() != "" ? txtNewCustomerEmail.getText() : "email@email.com";
-            ObservableList<String> supplements;
-            supplements = enrollUnits.getSelectionModel().getSelectedItems();
-            List<String> subscripedTo = supplements.subList(0, supplements.size());
+
+            ObservableList<Supplement> supplements;
+
+            supplements = MagSupplements.getSelectionModel().getSelectedItems();
+            List<Supplement> subscripedTo = supplements.subList(0, supplements.size());
+
+            System.out.println(subscripedTo);
+
             c = new Customer(name, email);
 
-            // System.out.println("Customer created with " + s.printCustomer());
-            if (!magazine.getMagazine()
-                    .addCustomer(c) /* || !magazine.getSubscription().addEnrolled(c, subscripedTo) */) {
+            if (!magazine.getMagazine().addCustomer(c)) {
+
                 alert.setContentText("Customer could not be added!");
                 alert.setAlertType(AlertType.ERROR);
                 alert.show();
+
             } else {
+
+                for (Supplement s : subscripedTo) {
+                    magazine.getSubscription().addSupplement(c.getCustomerId(), s, magazine.getMagazine());
+                }
+
                 GridPane emptyGrid = new GridPane();
                 root.setCenter(emptyGrid);
-                //GridPane customerPane = createCustomerPaneVBox();
-                //root.setLeft(customerPane);
+
                 combo_box.setItems(FXCollections.observableArrayList(magazine.getMagazine().getCustomerNames()));
                 System.out.println("Customer created with " + c.printCustomer());
             }
@@ -96,12 +106,14 @@ public class Assignment2 extends Application {
 
     EventHandler<ActionEvent> comboSelected = new EventHandler<ActionEvent>() {
         public void handle(ActionEvent e) {
-
             customer = magazine.getMagazine().getCustomerByName(combo_box.getValue() + "");
+
             txtCustomerName.setText("" + customer.getName());
-            txtCustomerAge.setText("" + customer.getEmail());
+            txtCustomerEmail.setText("" + customer.getEmail());
+
             textEnrolled.setText("...loading supplements...");
             textEnrolled.setText(magazine.getSupplements(customer.getCustomerId()));
+
             if (customer instanceof PayingCustomer) {
                 chkCustomerType.setSelected(true);
             } else {
@@ -110,30 +122,6 @@ public class Assignment2 extends Application {
 
         }
     };
-
-    @Override
-    public void start(Stage primaryStage) {
-
-        root = new BorderPane();
-        customerPane = createCustomerPaneVBox();
-        GridPane openSavePane = createOpenSaveGridPane(primaryStage, root);
-
-        lblHeading = new Text("Unimanager program v2.0");
-        lblHeading.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-
-        Text lblFooter = new Text("Think before you print - save this uni");
-        lblFooter.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-
-        root.setTop(lblHeading);
-        root.setLeft(customerPane);
-        root.setBottom(openSavePane);
-
-        scene = new Scene(root, 1000, 500);
-
-        primaryStage.setTitle("Uni Manager");
-        primaryStage.setScene(scene);
-        primaryStage.show();
-    }
 
     public GridPane createCustomerPaneVBox() {
         GridPane grid = new GridPane();
@@ -150,9 +138,9 @@ public class Assignment2 extends Application {
         lblCustomerName.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
         grid.add(lblCustomerName, 0, 1);
 
-        Text lblAge = new Text("Age");
-        lblAge.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblAge, 0, 2);
+        Text lblEmail = new Text("Age");
+        lblEmail.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblEmail, 0, 2);
 
         Text lblEnrolledUnits = new Text("Enrolled in:");
         lblEnrolledUnits.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
@@ -166,13 +154,14 @@ public class Assignment2 extends Application {
         combo_box = new ComboBox();
         combo_box.setItems(FXCollections.observableArrayList(magazine.getCustomersNames()));
         combo_box.setOnAction(comboSelected);
+
         grid.add(combo_box, 1, 0);
 
         txtCustomerName = new TextField();
         grid.add(txtCustomerName, 1, 1);
 
-        txtCustomerAge = new TextField();
-        grid.add(txtCustomerAge, 1, 2);
+        txtCustomerEmail = new TextField();
+        grid.add(txtCustomerEmail, 1, 2);
 
         textEnrolled = new TextArea();
         grid.add(textEnrolled, 1, 3);
@@ -189,10 +178,10 @@ public class Assignment2 extends Application {
         grid.setPadding(new Insets(0, 10, 0, 10));
 
         // column 0 labels
-        chkCustomerType = new CheckBox("Paying");
+        chkCustomerType = new CheckBox("Paying Customer");
         grid.add(chkCustomerType, 0, 0);
 
-        btnSiblings = new Button("Siblings");
+        btnSiblings = new Button("Associate Customer");
         grid.add(btnSiblings, 0, 1);
 
         btnNewCustomer = new Button("New");
@@ -211,7 +200,7 @@ public class Assignment2 extends Application {
         grid.setVgap(10);
         grid.setPadding(new Insets(0, 10, 0, 10));
 
-        //column 0 labels
+        // column 0 labels
         File recordsDir = new File(System.getProperty("user.home"), "/uni/records");
         if (!recordsDir.exists()) {
             recordsDir.mkdirs();
@@ -220,10 +209,8 @@ public class Assignment2 extends Application {
         fileChooser.setInitialDirectory(recordsDir);
         Button btnOpen = new Button("Open File");
         btnOpen.setOnAction(e -> {
-            fileChooser.setTitle("Open Uni File");
-            fileChooser.getExtensionFilters().addAll(
-                   
-                    new ExtensionFilter("Magazine Files", "*.dat"),
+            fileChooser.setTitle("Open Magazine Service File");
+            fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Magazine Files", "*.dat"),
                     new ExtensionFilter("All Files", "*.*"));
             File selectedFile = fileChooser.showOpenDialog(primaryStage);
             if (selectedFile != null) {
@@ -267,7 +254,7 @@ public class Assignment2 extends Application {
         lblCustomerName.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
         grid.add(lblCustomerName, 0, 1);
 
-        Text lblAge = new Text("Age");
+        Text lblAge = new Text("Email");
         lblAge.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
         grid.add(lblAge, 0, 3);
 
@@ -277,7 +264,7 @@ public class Assignment2 extends Application {
 
         Text lblType = new Text("Type:");
         lblType.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        // grid.add(lblType, 0, 7);
+        grid.add(lblType, 0, 7);
 
         txtNewCustomerName = new TextField();
         grid.add(txtNewCustomerName, 0, 2);
@@ -285,10 +272,11 @@ public class Assignment2 extends Application {
         txtNewCustomerEmail = new TextField();
         grid.add(txtNewCustomerEmail, 0, 4);
 
-        enrollUnits = new ListView<String>();
-        enrollUnits.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        enrollUnits.setItems(FXCollections.observableArrayList(magazine.getSupplementsName()));
-        grid.add(enrollUnits, 0, 6);
+        MagSupplements = new ListView<Supplement>();
+        MagSupplements.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        // MagSupplements.setItems(FXCollections.createObservableList(magazine.getSupplementsName()));
+        MagSupplements.setItems(FXCollections.observableArrayList(magazine.getSups()));
+        grid.add(MagSupplements, 0, 6);
 
         // GridPane subGrid = new GridPane();
         // subGrid.setHgap(20);
@@ -301,6 +289,30 @@ public class Assignment2 extends Application {
 
         // grid.add(subGrid, 0, 7);
         return grid;
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+
+        root = new BorderPane();
+        customerPane = createCustomerPaneVBox();
+        GridPane openSavePane = createOpenSaveGridPane(primaryStage, root);
+
+        lblHeading = new Text("Magazine Service Information System");
+        lblHeading.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+
+        Text lblFooter = new Text("Think before you print - save this uni");
+        lblFooter.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+
+        root.setTop(lblHeading);
+        root.setLeft(customerPane);
+        root.setBottom(openSavePane);
+
+        scene = new Scene(root, 1000, 500);
+
+        primaryStage.setTitle("Magazine Service");
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 
     /**
@@ -368,7 +380,7 @@ public class Assignment2 extends Application {
 
         MagazineService ms = new MagazineService(mag, sub);
 
-        //save the magazine
+        // save the magazine
         File selectedFile = new File("magazine.dat");
         ms.writeMagazineService(selectedFile);
 

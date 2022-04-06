@@ -66,6 +66,10 @@ public class MagazineService implements Serializable {
         return supplements;
     }
 
+    public ArrayList<Supplement> getSups() {
+        return magazine.getSupplements();
+    }
+
     public String[] getCustomersNames() {
         String[] customerNames = null;
         
