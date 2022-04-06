@@ -435,7 +435,6 @@ public class Assignment2 extends Application {
     }
 
     EventHandler<ActionEvent> btnEditModeClicked = new EventHandler<ActionEvent>() {
-        @Override
         public void handle(ActionEvent event) {
             root.setLeft(createCustomerPaneVBox());
             root.setRight(null);
@@ -443,7 +442,6 @@ public class Assignment2 extends Application {
     };
 
     EventHandler<ActionEvent> btnViewModeClicked = new EventHandler<ActionEvent>() {
-        @Override
         public void handle(ActionEvent event) {
             root.setLeft(ViewOnlyPane());
             root.setRight(null);
@@ -451,7 +449,6 @@ public class Assignment2 extends Application {
     };
 
     EventHandler<ActionEvent> btnCreateModeClicked = new EventHandler<ActionEvent>() {
-        @Override
         public void handle(ActionEvent event) {
             root.setLeft(createNewCustomerPaneVBox());
             root.setRight(createNewSupplementPaneVBox());
