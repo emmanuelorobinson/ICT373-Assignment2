@@ -60,7 +60,8 @@ public class Assignment2 extends Application {
     CheckBox chkCustomerType, chkNewCustomerType;
     ComboBox combo_box;
 
-    TextField txtCustomerName, txtCustomerType, txtCustomerEmail, txtCustomerAddrStNo, txtCustomerAddrStName, txtCustomerAddrSuburb,
+    TextField txtCustomerName, txtCustomerType, txtCustomerEmail, txtCustomerAddrStNo, txtCustomerAddrStName,
+            txtCustomerAddrSuburb,
             txtCustomerAddrPostcode, txtNewCustomerName, txtNewCustomerEmail, txtNewCustomerAddrStNo,
             txtNewCustomerAddrStName, txtNewCustomerAddrSuburb,
             txtNewCustomerAddrPostcode;
@@ -114,10 +115,15 @@ public class Assignment2 extends Application {
 
             String name = txtNewCustomerName.getText() != "" ? txtNewCustomerName.getText() : "Jon";
             String email = txtNewCustomerEmail.getText() != "" ? txtNewCustomerEmail.getText() : "email@email.com";
-            int addrStNo = txtNewCustomerAddrStNo.getText() != "" ? Integer.parseInt(txtNewCustomerAddrStNo.getText()) : 1;
-            String addrStName = txtNewCustomerAddrStName.getText() != "" ? txtNewCustomerAddrStName.getText() : "Street";
-            String addrSuburb = txtNewCustomerAddrSuburb.getText() != "" ? txtNewCustomerAddrSuburb.getText() : "Suburb";
-            int addrPostcode = txtNewCustomerAddrPostcode.getText() != "" ? Integer.parseInt(txtNewCustomerAddrPostcode.getText()) : 2000;
+            int addrStNo = txtNewCustomerAddrStNo.getText() != "" ? Integer.parseInt(txtNewCustomerAddrStNo.getText())
+                    : 1;
+            String addrStName = txtNewCustomerAddrStName.getText() != "" ? txtNewCustomerAddrStName.getText()
+                    : "Street";
+            String addrSuburb = txtNewCustomerAddrSuburb.getText() != "" ? txtNewCustomerAddrSuburb.getText()
+                    : "Suburb";
+            int addrPostcode = txtNewCustomerAddrPostcode.getText() != ""
+                    ? Integer.parseInt(txtNewCustomerAddrPostcode.getText())
+                    : 2000;
 
             ObservableList<String> supplements;
 
@@ -126,18 +132,17 @@ public class Assignment2 extends Application {
 
             System.out.println(subscripedTo);
 
-            if(rbNotPaying.isSelected()){
+            if (rbNotPaying.isSelected()) {
                 c = new AssociateCustomer(name, email);
-            }
-            else{
+            } else {
                 c = new PayingCustomer(name, email, "c");
 
             }
 
             c.getAddress().setStreetNo(addrStNo);
-                c.getAddress().setStreetName(addrStName);
-                c.getAddress().setSuburb(addrSuburb);
-                c.getAddress().setPostcode(addrPostcode);
+            c.getAddress().setStreetName(addrStName);
+            c.getAddress().setSuburb(addrSuburb);
+            c.getAddress().setPostcode(addrPostcode);
 
             if (!magazine.getMagazine().addCustomer(c)) {
 
@@ -173,14 +178,12 @@ public class Assignment2 extends Application {
             txtCustomerAddrStName.setText("" + customer.getAddress().getStreetName());
             txtCustomerAddrSuburb.setText("" + customer.getAddress().getSuburb());
             txtCustomerAddrPostcode.setText("" + customer.getAddress().getPostcode());
-            
-            if(customer instanceof PayingCustomer){
+
+            if (customer instanceof PayingCustomer) {
                 txtCustomerType.setText("Paying Customer");
-            }
-            else{
+            } else {
                 txtCustomerType.setText("Associate Customer");
             }
-
 
             textEnrolled.setText("...loading supplements...");
             textEnrolled.setText(magazine.getSupplements(customer.getCustomerId()));
@@ -286,7 +289,6 @@ public class Assignment2 extends Application {
         Text lblCustomerName = new Text("Customer Name:");
         lblCustomerName.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
         grid.add(lblCustomerName, 0, 2);
-
 
         Text lblEmail = new Text("Email:");
         lblEmail.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
@@ -448,7 +450,6 @@ public class Assignment2 extends Application {
         grid.add(rbNotPaying, 2, 1);
 
         // add event handler to radio buttons
-        
 
         // column 0 labels
         Text lblCustomer = new Text("New Customer");
@@ -598,6 +599,54 @@ public class Assignment2 extends Application {
         return grid;
     }
 
+    public void viewSuppDetails(String s) {
+        // get supplement details
+        Supplement supp = magazine.getSupplement(s);
+
+        // display supplement details
+        alert.setAlertType(AlertType.INFORMATION);
+        alert.setTitle("Supplement Details");
+        alert.setHeaderText("Supplement Details");
+        alert.setContentText("Supplement Name: " + supp.getName() + "\n" + "Supplement Cost: " + supp.getCost() + "\n");
+        alert.showAndWait();
+    }
+
+    public void viewCustomerDetails(String s) {
+        // get customer details
+        Customer cus = magazine.getCustomer(s);
+
+        // display customer details
+        alert.setAlertType(AlertType.INFORMATION);
+        alert.setTitle("Customer Details");
+        alert.setHeaderText("Customer Details");
+
+        if (cus instanceof PayingCustomer) {
+            alert.setContentText("Customer Type: Paying Customer\n" + "Customer Name: " + cus.getName() + "\n"
+                    + "Customer Email: " + cus.getEmail() + "\n"
+                    + "\nCustomer Address: \n" + cus.getAddress().printAddress() + "\n\n"
+                    + "Customer Supplements in: \n"
+                    + magazine.getSupplements(cus.getCustomerId()) + "\n"
+                    + "\n" + "Customers' Associate Customers: "
+                    + magazine.getAssociateCustomerByPayingCustomer(cus.getCustomerId()) + "\n"
+                    + "Customers'billing information: \n" + magazine.getBillStrings(cus.getCustomerId()) + "\n");
+        } else {
+
+            AssociateCustomer newcus = (AssociateCustomer) cus;
+
+            alert.setContentText("Customer Type: Associate Customer\n" + "Customer Name: " + cus.getName() + "\n"
+                    + "Customer Email: " + cus.getEmail() + "\n"
+                    + "\nCustomer Address: \n" + cus.getAddress() + "\n\n" + "Customer Supplements in: "
+                    + magazine.getSupplements(cus.getCustomerId()) + "\n"
+                    + "\n" + "Customers' Paying Customer: "
+                    + newcus.getPayingCustomer() + "\n"
+                    + "Customers'billing information: \n" + magazine.getBillStrings(cus.getCustomerId()) + "\n");
+
+        }
+
+        alert.showAndWait();
+
+    }
+
     public GridPane ViewOnlyPane() {
         GridPane grid = new GridPane();
         grid.setHgap(10);
@@ -616,6 +665,12 @@ public class Assignment2 extends Application {
             t.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
             grid.add(t, 0, count);
 
+            Button btn = new Button("View");
+            btn.setOnAction(e -> {
+                viewSuppDetails(s);
+            });
+
+            grid.add(btn, 1, count);
             count++;
         }
 
@@ -631,6 +686,13 @@ public class Assignment2 extends Application {
 
             t.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
             grid.add(t, 0, count);
+
+            Button btn = new Button("View");
+            btn.setOnAction(e -> {
+                viewCustomerDetails(c);
+            });
+
+            grid.add(btn, 1, count);
 
             count++;
         }

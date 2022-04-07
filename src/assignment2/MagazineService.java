@@ -148,4 +148,39 @@ public class MagazineService implements Serializable {
 
     }
 
+    public Supplement getSupplement(String supplementName) {
+        return magazine.getSupplementByName(supplementName);
+    }
+
+    public Customer getCustomer(String customerName) {
+        return magazine.getCustomerByName(customerName);
+    }
+
+    public String getAssociateCustomerByPayingCustomer(int customerId) {
+        //returns an array of associate customer names for a specific paying customer
+        //return magazine.getAssociateCustomerByPayingCustomer(customerId);
+        String associateCustomer = "";
+        String[] list = magazine.getAssociateCustomerByPayingCustomer(customerId);
+
+        for(String s : list) {
+            associateCustomer += s + "\n";
+        }
+
+        return associateCustomer;
+    }
+
+    public String getBillStrings(int customerId) {
+
+        Customer customer = magazine.getCustomerById(customerId);
+        String bill = "";
+        String[] billStrings = Calculation.getWeeklySuppList(customer, subscription, magazine);
+
+        for (String s : billStrings) {
+            if (s != null) {
+                bill += s + "\n";
+            }
+        }
+
+        return bill;
+    }
 }

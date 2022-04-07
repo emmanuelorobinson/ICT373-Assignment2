@@ -77,6 +77,14 @@ public class PayingCustomer extends Customer {
         return associateList;
     }
 
+    public String[] getAssociateCustomerNames() {
+        String[] names = new String[associateList.size()];
+        for (int i = 0; i < associateList.size(); i++) {
+            names[i] = associateList.get(i).getName();
+        }
+        return names;
+    }
+
     // adds associate customer to associate list
 
     /**

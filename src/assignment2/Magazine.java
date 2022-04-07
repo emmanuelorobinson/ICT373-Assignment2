@@ -247,6 +247,19 @@ public class Magazine implements Serializable {
         return payingCustomerStrings;
     }
 
+    public String[] getAssociateCustomerByPayingCustomer(int customerId) {
+        String[] associateCustomerByPayingCustomer = new String[customerList.size()];
+
+        for (Customer customer : customerList) {
+            if (customer instanceof PayingCustomer && customer.getCustomerId() == customerId) {
+                PayingCustomer pCus = (PayingCustomer) customer;
+                associateCustomerByPayingCustomer = pCus.getAssociateCustomerNames();
+            }
+        }
+
+        return associateCustomerByPayingCustomer;
+    }
+
     public PayingCustomer getPayingCustomerOfAssociate(int id) {
         //for each Associate in the customerList
         for (Customer customer : customerList) {

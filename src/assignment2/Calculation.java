@@ -158,20 +158,29 @@ public class Calculation {
      * @param sub
      * @param mag
      */
-    public static void getWeeklySuppList(Customer customer, Subscription sub, Magazine mag) {
+    public static String[] getWeeklySuppList(Customer customer, Subscription sub, Magazine mag) {
 
         // get supplements for customer
+        String[] billings = new String[20];
         ArrayList<Supplement> supplements;
         int numOfWeek = 1;
+        int count = 0;
 
-        System.out.println("WEEKLY MAGAZINE FOR " + mag.getTitle().toUpperCase() + " OUT NOW!");
-
+        //System.out.println("WEEKLY MAGAZINE FOR " + mag.getTitle().toUpperCase() + " OUT NOW!");
+        billings[count] = "WEEKLY MAGAZINE FOR " + mag.getTitle().toUpperCase() + " OUT NOW!";
+        count++;
         // print out supplements details
-        System.out.println("\nNAME: " + customer.getName());
+        //System.out.println("\nNAME: " + customer.getName());
+        billings[count] = "NAME: " + customer.getName();
+        count++;
+
         System.out.println("EMAIL: " + customer.getEmail());
+        billings[count] = "EMAIL: " + customer.getEmail();
+        count++;
         System.out.println(
                 "---------------------------------------------------------------------");
-
+        
+        billings[count] = "---------------------------------------------------------------------";
         // checks subscription object if customer has supplements
         if (sub.getSupplements(customer.getCustomerId()) != null) {
             supplements = sub.getSupplements(customer.getCustomerId());
@@ -179,15 +188,18 @@ public class Calculation {
             // retreives supplement for all customer
             for (Supplement supplement : supplements) {
                 System.out.println(supplement.getCostDetails(numOfWeek));
+                if(supplement.getCostDetails(numOfWeek) != null) {
+                    billings[count] = supplement.getCostDetails(numOfWeek);
+                    count++;
+                }
             }
         } else {
             System.out.println("No supplements for this customer");
+            billings[count] = "No supplements for this customer";
+            count++;
         }
 
-        System.out.println("");
-        System.out.println(
-                "#####################################################################");
-        System.out.println("");
+        return billings;
 
     }
 }
