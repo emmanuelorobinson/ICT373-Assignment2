@@ -174,11 +174,11 @@ public class Calculation {
         billings[count] = "NAME: " + customer.getName();
         count++;
 
-        System.out.println("EMAIL: " + customer.getEmail());
+        //System.out.println("EMAIL: " + customer.getEmail());
         billings[count] = "EMAIL: " + customer.getEmail();
         count++;
-        System.out.println(
-                "---------------------------------------------------------------------");
+        //System.out.println(
+        //        "---------------------------------------------------------------------");
         
         billings[count] = "---------------------------------------------------------------------";
         // checks subscription object if customer has supplements
@@ -187,14 +187,14 @@ public class Calculation {
 
             // retreives supplement for all customer
             for (Supplement supplement : supplements) {
-                System.out.println(supplement.getCostDetails(numOfWeek));
+                //System.out.println(supplement.getCostDetails(numOfWeek));
                 if(supplement.getCostDetails(numOfWeek) != null) {
                     billings[count] = supplement.getCostDetails(numOfWeek);
                     count++;
                 }
             }
         } else {
-            System.out.println("No supplements for this customer");
+            //System.out.println("No supplements for this customer");
             billings[count] = "No supplements for this customer";
             count++;
         }
