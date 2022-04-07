@@ -172,12 +172,16 @@ public class Assignment2 extends Application {
         public void handle(ActionEvent e) {
             customer = magazine.getMagazine().getCustomerByName(combo_box.getValue() + "");
 
-            txtCustomerName.setText("" + customer.getName());
-            txtCustomerEmail.setText("" + customer.getEmail());
-            txtCustomerAddrStNo.setText("" + customer.getAddress().getStreetNo());
-            txtCustomerAddrStName.setText("" + customer.getAddress().getStreetName());
-            txtCustomerAddrSuburb.setText("" + customer.getAddress().getSuburb());
-            txtCustomerAddrPostcode.setText("" + customer.getAddress().getPostcode());
+            try {
+                txtCustomerName.setText("" + customer.getName());
+                txtCustomerEmail.setText("" + customer.getEmail());
+                txtCustomerAddrStNo.setText("" + customer.getAddress().getStreetNo());
+                txtCustomerAddrStName.setText("" + customer.getAddress().getStreetName());
+                txtCustomerAddrSuburb.setText("" + customer.getAddress().getSuburb());
+                txtCustomerAddrPostcode.setText("" + customer.getAddress().getPostcode());
+            } catch (NullPointerException ex) {
+                System.out.println("No customer selected");
+            }
 
             if (customer instanceof PayingCustomer) {
                 txtCustomerType.setText("Paying Customer");
