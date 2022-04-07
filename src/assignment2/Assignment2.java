@@ -630,7 +630,7 @@ public class Assignment2 extends Application {
                     + "\nCustomer Address: \n" + cus.getAddress().printAddress() + "\n\n"
                     + "Customer Supplements in: \n"
                     + magazine.getSupplements(cus.getCustomerId()) + "\n"
-                    + "\n" + "Customers' Associate Customers: "
+                    + "\n" + "Customers' Associate Customers: \n"
                     + magazine.getAssociateCustomerByPayingCustomer(cus.getCustomerId()) + "\n"
                     + "Customers'billing information: \n" + magazine.getBillStrings(cus.getCustomerId()) + "\n");
         } else {
@@ -642,7 +642,7 @@ public class Assignment2 extends Application {
                     + "\nCustomer Address: \n" + cus.getAddress() + "\n\n" + "Customer Supplements in: "
                     + magazine.getSupplements(cus.getCustomerId()) + "\n"
                     + "\n" + "Customers' Paying Customer: "
-                    + newcus.getPayingCustomer() + "\n"
+                    + newcus.getPayingCustomer().getName() + "\n\n"
                     + "Customers'billing information: \n" + magazine.getBillStrings(cus.getCustomerId()) + "\n");
 
         }
