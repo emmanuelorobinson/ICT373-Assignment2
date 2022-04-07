@@ -60,7 +60,7 @@ public class Assignment2 extends Application {
     CheckBox chkCustomerType, chkNewCustomerType;
     ComboBox combo_box;
 
-    TextField txtCustomerName, txtCustomerEmail, txtCustomerAddrStNo, txtCustomerAddrStName, txtCustomerAddrSuburb,
+    TextField txtCustomerName, txtCustomerType, txtCustomerEmail, txtCustomerAddrStNo, txtCustomerAddrStName, txtCustomerAddrSuburb,
             txtCustomerAddrPostcode, txtNewCustomerName, txtNewCustomerEmail, txtNewCustomerAddrStNo,
             txtNewCustomerAddrStName, txtNewCustomerAddrSuburb,
             txtNewCustomerAddrPostcode;
@@ -117,7 +117,7 @@ public class Assignment2 extends Application {
             int addrStNo = txtNewCustomerAddrStNo.getText() != "" ? Integer.parseInt(txtNewCustomerAddrStNo.getText()) : 1;
             String addrStName = txtNewCustomerAddrStName.getText() != "" ? txtNewCustomerAddrStName.getText() : "Street";
             String addrSuburb = txtNewCustomerAddrSuburb.getText() != "" ? txtNewCustomerAddrSuburb.getText() : "Suburb";
-            int addrPostcode = txtNewCustomerAddrPostcode.getText() != "" ? Integer.paresInt(txtNewCustomerAddrPostcode.getText()) : 2000;
+            int addrPostcode = txtNewCustomerAddrPostcode.getText() != "" ? Integer.parseInt(txtNewCustomerAddrPostcode.getText()) : 2000;
 
             ObservableList<String> supplements;
 
@@ -130,7 +130,7 @@ public class Assignment2 extends Application {
                 c = new AssociateCustomer(name, email);
             }
             else{
-                c = new PayingCustomer(name, email, 'c');
+                c = new PayingCustomer(name, email, "c");
 
             }
 
@@ -173,6 +173,14 @@ public class Assignment2 extends Application {
             txtCustomerAddrStName.setText("" + customer.getAddress().getStreetName());
             txtCustomerAddrSuburb.setText("" + customer.getAddress().getSuburb());
             txtCustomerAddrPostcode.setText("" + customer.getAddress().getPostcode());
+            
+            if(customer instanceof PayingCustomer){
+                txtCustomerType.setText("Paying Customer");
+            }
+            else{
+                txtCustomerType.setText("Associate Customer");
+            }
+
 
             textEnrolled.setText("...loading supplements...");
             textEnrolled.setText(magazine.getSupplements(customer.getCustomerId()));
@@ -271,33 +279,38 @@ public class Assignment2 extends Application {
         lblCustomer.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
         grid.add(lblCustomer, 0, 0);
 
+        Text lblCustomerType = new Text("Customer Type:");
+        lblCustomerType.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblCustomerType, 0, 1);
+
         Text lblCustomerName = new Text("Customer Name:");
         lblCustomerName.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblCustomerName, 0, 1);
+        grid.add(lblCustomerName, 0, 2);
+
 
         Text lblEmail = new Text("Email:");
         lblEmail.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblEmail, 0, 2);
+        grid.add(lblEmail, 0, 3);
 
         Text lblAddrStNo = new Text("Address Street No");
         lblAddrStNo.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblAddrStNo, 0, 3);
+        grid.add(lblAddrStNo, 0, 4);
 
         Text lblAddrStName = new Text("Address Street Name");
         lblAddrStName.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblAddrStName, 0, 4);
+        grid.add(lblAddrStName, 0, 5);
 
         Text lblAddrSuburb = new Text("Address Suburb");
         lblAddrSuburb.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblAddrSuburb, 0, 5);
+        grid.add(lblAddrSuburb, 0, 6);
 
         Text lblAddrPostcode = new Text("Address Postcode");
         lblAddrPostcode.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblAddrPostcode, 0, 6);
+        grid.add(lblAddrPostcode, 0, 7);
 
         Text lblEnrolledUnits = new Text("Enrolled in:");
         lblEnrolledUnits.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblEnrolledUnits, 0, 7);
+        grid.add(lblEnrolledUnits, 0, 8);
 
         // column 1 controls
         combo_box = new ComboBox();
@@ -305,6 +318,9 @@ public class Assignment2 extends Application {
         combo_box.setOnAction(comboSelected);
 
         grid.add(combo_box, 1, 0);
+
+        txtCustomerType = new TextField();
+        grid.add(txtCustomerType, 1, 1);
 
         txtCustomerName = new TextField();
         grid.add(txtCustomerName, 1, 2);
@@ -384,6 +400,8 @@ public class Assignment2 extends Application {
                 lblHeading.setText(magazine.getMagazine().getTitle());
 
                 root.setTop(headingPane(lblHeading));
+                root.setLeft(null);
+                root.setRight(null);
             }
 
         });
