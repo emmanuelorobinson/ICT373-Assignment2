@@ -67,6 +67,7 @@ public class MagazineService implements Serializable {
 
         return payingCustomer;
     }
+    
     public ArrayList<Supplement> getSups() {
         return magazine.getSupplements();
     }
