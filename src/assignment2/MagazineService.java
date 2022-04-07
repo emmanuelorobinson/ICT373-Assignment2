@@ -52,13 +52,7 @@ public class MagazineService implements Serializable {
     public String getSupplements(int customerId) {
         String supplements = "";
         ArrayList<Supplement> customerSupplements = subscription.getSupplements(customerId);
-        
-        //print out all supplements for a customer
-        // for (Supplement supplement : customerSupplements) {
-        //     System.out.println(supplement.getName());
-        // }
 
-        //get supplement from subscription for customer
         for(Supplement supplement : customerSupplements) {
             supplements += supplement.getName() + "\n";
         }
@@ -66,6 +60,13 @@ public class MagazineService implements Serializable {
         return supplements;
     }
 
+    public String getPayingCustomerString(int customerId) {
+        String payingCustomer = "";
+
+        payingCustomer = magazine.getPayingCustomerOfAssociate(customerId).getName();
+
+        return payingCustomer;
+    }
     public ArrayList<Supplement> getSups() {
         return magazine.getSupplements();
     }
@@ -93,6 +94,17 @@ public class MagazineService implements Serializable {
             System.out.println("Error: " + e);
         }
         return supplements;
+    }
+
+    public String[] getPayingCusName() {
+        String[] payingCustomer = null;
+
+        try{
+            payingCustomer = magazine.getPayingCustomerStrings();
+        } catch (NullPointerException e) {
+            System.out.println("Error: " + e);
+        }
+        return payingCustomer;
     }
 
     public Supplement findSupplement(String supplementName) {

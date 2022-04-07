@@ -6,6 +6,9 @@
 package assignment2;
 
 import java.util.List;
+
+import javax.swing.event.ChangeListener;
+
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -19,9 +22,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListView;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
@@ -45,17 +50,27 @@ public class Assignment2 extends Application {
 
     BorderPane root;
     Scene scene;
-    // Label selectedCustomer, lblName, lblAge, lblEnrolled;
     TextArea textEnrolled;
+    TextArea textPayingCustomers;
     Text lblHeading;
+
     Button btnManageUnits, btnSiblings, btnNewCustomer, btnUpdateCustomer, btnNewEnrolled, btnCreateNewCustomer,
-            btnView, btnCreate, btnEdit, btnCreateNewSupplement;
+            btnView, btnCreate, btnEdit, btnCreateNewSupplement, btnEditMag;
+
     CheckBox chkCustomerType, chkNewCustomerType;
     ComboBox combo_box;
-    TextField txtCustomerName, txtCustomerEmail, txtNewCustomerName, txtNewCustomerEmail;
+
+    TextField txtCustomerName, txtCustomerEmail, txtCustomerAddrStNo, txtCustomerAddrStName, txtCustomerAddrSuburb,
+            txtCustomerAddrPostcode, txtNewCustomerName, txtNewCustomerEmail, txtNewCustomerAddrStNo,
+            txtNewCustomerAddrStName, txtNewCustomerAddrSuburb,
+            txtNewCustomerAddrPostcode;
+    TextField txtMagazineName, txtMagazineCost;
     TextField txtSupp, txtSuppName, txtSuppCost;
-    // ListView<String> MagSupplements;
+
+    RadioButton rbPaying, rbNotPaying;
+
     ListView<String> MagSupplements;
+    ListView<String> MagPayingCustomers;
     Alert alert = new Alert(AlertType.NONE);
 
     GridPane customerPane;
@@ -80,12 +95,11 @@ public class Assignment2 extends Application {
             s = new Supplement(name, cost);
 
             // add supplement to magazine
-            if(magazine.getMagazine().addSupplement(s)) {
+            if (magazine.getMagazine().addSupplement(s)) {
                 alert.setAlertType(AlertType.INFORMATION);
                 alert.setContentText("Supplement added to magazine");
                 alert.showAndWait();
-            }
-            else {
+            } else {
                 alert.setAlertType(AlertType.ERROR);
                 alert.setContentText("Supplement not added to magazine");
                 alert.showAndWait();
@@ -100,6 +114,10 @@ public class Assignment2 extends Application {
 
             String name = txtNewCustomerName.getText() != "" ? txtNewCustomerName.getText() : "Jon";
             String email = txtNewCustomerEmail.getText() != "" ? txtNewCustomerEmail.getText() : "email@email.com";
+            int addrStNo = txtNewCustomerAddrStNo.getText() != "" ? Integer.parseInt(txtNewCustomerAddrStNo.getText()) : 1;
+            String addrStName = txtNewCustomerAddrStName.getText() != "" ? txtNewCustomerAddrStName.getText() : "Street";
+            String addrSuburb = txtNewCustomerAddrSuburb.getText() != "" ? txtNewCustomerAddrSuburb.getText() : "Suburb";
+            int addrPostcode = txtNewCustomerAddrPostcode.getText() != "" ? Integer.paresInt(txtNewCustomerAddrPostcode.getText()) : 2000;
 
             ObservableList<String> supplements;
 
@@ -108,7 +126,18 @@ public class Assignment2 extends Application {
 
             System.out.println(subscripedTo);
 
-            c = new Customer(name, email);
+            if(rbNotPaying.isSelected()){
+                c = new AssociateCustomer(name, email);
+            }
+            else{
+                c = new PayingCustomer(name, email, 'c');
+
+            }
+
+            c.getAddress().setStreetNo(addrStNo);
+                c.getAddress().setStreetName(addrStName);
+                c.getAddress().setSuburb(addrSuburb);
+                c.getAddress().setPostcode(addrPostcode);
 
             if (!magazine.getMagazine().addCustomer(c)) {
 
@@ -140,15 +169,93 @@ public class Assignment2 extends Application {
 
             txtCustomerName.setText("" + customer.getName());
             txtCustomerEmail.setText("" + customer.getEmail());
+            txtCustomerAddrStNo.setText("" + customer.getAddress().getStreetNo());
+            txtCustomerAddrStName.setText("" + customer.getAddress().getStreetName());
+            txtCustomerAddrSuburb.setText("" + customer.getAddress().getSuburb());
+            txtCustomerAddrPostcode.setText("" + customer.getAddress().getPostcode());
 
             textEnrolled.setText("...loading supplements...");
             textEnrolled.setText(magazine.getSupplements(customer.getCustomerId()));
 
-            if (customer instanceof PayingCustomer) {
-                chkCustomerType.setSelected(true);
-            } else {
-                chkCustomerType.setSelected(false);
+            if (customer instanceof AssociateCustomer) {
+                textPayingCustomers.setText("...loading paying customers...");
+                textPayingCustomers.setText(magazine.getPayingCustomerString(customer.getCustomerId()));
             }
+
+            if (customer instanceof PayingCustomer) {
+                rbPaying.setSelected(true);
+            } else {
+                rbNotPaying.setSelected(true);
+            }
+
+        }
+    };
+
+    EventHandler<ActionEvent> btnEditModeClicked = new EventHandler<ActionEvent>() {
+        public void handle(ActionEvent event) {
+            root.setLeft(createCustomerPaneVBox());
+            root.setRight(editMagazineInfoPaneVBox());
+        }
+    };
+
+    EventHandler<ActionEvent> btnViewModeClicked = new EventHandler<ActionEvent>() {
+        public void handle(ActionEvent event) {
+            root.setLeft(ViewOnlyPane());
+            root.setRight(null);
+        }
+    };
+
+    EventHandler<ActionEvent> btnCreateModeClicked = new EventHandler<ActionEvent>() {
+        public void handle(ActionEvent event) {
+            root.setLeft(createNewCustomerPaneVBox());
+            root.setRight(createNewSupplementPaneVBox());
+
+        }
+    };
+
+    public GridPane editMagazineInfoPaneVBox() {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(10, 10, 10, 10));
+
+        Text lblTitle = new Text("Edit Magazine Info");
+        lblTitle.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        grid.add(lblTitle, 0, 0);
+
+        Text lblName = new Text("Name");
+        lblName.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblName, 0, 1);
+
+        Text lblCost = new Text("Cost");
+        lblCost.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblCost, 0, 2);
+
+        txtMagazineName = new TextField();
+        grid.add(txtMagazineName, 1, 1);
+
+        txtMagazineCost = new TextField();
+        grid.add(txtMagazineCost, 1, 2);
+
+        btnEditMag = new Button("Edit Magazine");
+        btnEditMag.setOnAction(btnEditMagazineDetails);
+        grid.add(btnEditMag, 1, 3);
+
+        return grid;
+
+    }
+
+    EventHandler<ActionEvent> btnEditMagazineDetails = new EventHandler<ActionEvent>() {
+        public void handle(ActionEvent event) {
+            String name = txtMagazineName.getText();
+            int cost = Integer.parseInt(txtMagazineCost.getText());
+
+            magazine.getMagazine().setTitle(name);
+            magazine.getMagazine().setWeeklyCost(cost);
+
+            alert.setContentText("Magazine details updated");
+            alert.setAlertType(AlertType.INFORMATION);
+            alert.show();
 
         }
     };
@@ -168,17 +275,29 @@ public class Assignment2 extends Application {
         lblCustomerName.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
         grid.add(lblCustomerName, 0, 1);
 
-        Text lblEmail = new Text("Age");
+        Text lblEmail = new Text("Email:");
         lblEmail.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
         grid.add(lblEmail, 0, 2);
 
+        Text lblAddrStNo = new Text("Address Street No");
+        lblAddrStNo.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblAddrStNo, 0, 3);
+
+        Text lblAddrStName = new Text("Address Street Name");
+        lblAddrStName.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblAddrStName, 0, 4);
+
+        Text lblAddrSuburb = new Text("Address Suburb");
+        lblAddrSuburb.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblAddrSuburb, 0, 5);
+
+        Text lblAddrPostcode = new Text("Address Postcode");
+        lblAddrPostcode.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblAddrPostcode, 0, 6);
+
         Text lblEnrolledUnits = new Text("Enrolled in:");
         lblEnrolledUnits.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblEnrolledUnits, 0, 3);
-
-        Text lblType = new Text("Type:");
-        lblType.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblType, 0, 5);
+        grid.add(lblEnrolledUnits, 0, 7);
 
         // column 1 controls
         combo_box = new ComboBox();
@@ -188,15 +307,27 @@ public class Assignment2 extends Application {
         grid.add(combo_box, 1, 0);
 
         txtCustomerName = new TextField();
-        grid.add(txtCustomerName, 1, 1);
+        grid.add(txtCustomerName, 1, 2);
 
         txtCustomerEmail = new TextField();
-        grid.add(txtCustomerEmail, 1, 2);
+        grid.add(txtCustomerEmail, 1, 3);
+
+        txtCustomerAddrStNo = new TextField();
+        grid.add(txtCustomerAddrStNo, 1, 4);
+
+        txtCustomerAddrStName = new TextField();
+        grid.add(txtCustomerAddrStName, 1, 5);
+
+        txtCustomerAddrSuburb = new TextField();
+        grid.add(txtCustomerAddrSuburb, 1, 6);
+
+        txtCustomerAddrPostcode = new TextField();
+        grid.add(txtCustomerAddrPostcode, 1, 7);
 
         textEnrolled = new TextArea();
-        grid.add(textEnrolled, 1, 3);
+        grid.add(textEnrolled, 1, 8);
 
-        grid.add(createButtonGroupVBox(), 1, 5);
+        grid.add(createButtonGroupVBox(), 1, 10);
 
         return grid;
     }
@@ -206,13 +337,6 @@ public class Assignment2 extends Application {
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(0, 10, 0, 10));
-
-        // column 0 labels
-        chkCustomerType = new CheckBox("Paying Customer");
-        grid.add(chkCustomerType, 0, 0);
-
-        btnSiblings = new Button("Associate Customer");
-        grid.add(btnSiblings, 0, 1);
 
         btnNewCustomer = new Button("New");
         btnNewCustomer.setOnAction(btnNewCustomerClicked);
@@ -287,49 +411,113 @@ public class Assignment2 extends Application {
         grid.setVgap(10);
         grid.setPadding(new Insets(10, 10, 10, 10));
 
+        Text lblType = new Text("Type:");
+        lblType.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblType, 0, 1);
+
+        final ToggleGroup customerType = new ToggleGroup();
+
+        rbPaying = new RadioButton("Paying Customer");
+        rbPaying.setToggleGroup(customerType);
+        rbPaying.setUserData("Paying Customer");
+        rbPaying.setSelected(true);
+
+        rbNotPaying = new RadioButton("Associate Customer");
+        rbNotPaying.setUserData("Associate Customer");
+        rbNotPaying.setToggleGroup(customerType);
+
+        grid.add(rbPaying, 1, 1);
+        grid.add(rbNotPaying, 2, 1);
+
+        // add event handler to radio buttons
+        
+
         // column 0 labels
         Text lblCustomer = new Text("New Customer");
         lblCustomer.setFont(Font.font("Arial", FontWeight.BOLD, 18));
-        grid.add(lblCustomer, 0, 0);
+        grid.add(lblCustomer, 0, 2);
 
         Text lblCustomerName = new Text("Name:");
         lblCustomerName.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblCustomerName, 0, 1);
+        grid.add(lblCustomerName, 0, 3);
 
         Text lblAge = new Text("Email");
         lblAge.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblAge, 0, 3);
+        grid.add(lblAge, 0, 5);
+
+        Text lblAddrStNo = new Text("Address Street No");
+        lblAddrStNo.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblAddrStNo, 0, 7);
+
+        Text lblAddrStName = new Text("Address Street Name");
+        lblAddrStName.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblAddrStName, 0, 9);
+
+        Text lblAddrSuburb = new Text("Address Suburb");
+        lblAddrSuburb.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblAddrSuburb, 0, 11);
+
+        Text lblAddrPostcode = new Text("Address Postcode");
+        lblAddrPostcode.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        grid.add(lblAddrPostcode, 0, 13);
 
         Text lblEnrolledUnits = new Text("Enrolled in:");
         lblEnrolledUnits.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblEnrolledUnits, 0, 5);
+        grid.add(lblEnrolledUnits, 0, 15);
 
-        Text lblType = new Text("Type:");
-        lblType.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
-        grid.add(lblType, 0, 7);
+        Text lblPayingCuss = new Text("Paying Customers:");
+        lblPayingCuss.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
 
         txtNewCustomerName = new TextField();
-        grid.add(txtNewCustomerName, 0, 2);
+        grid.add(txtNewCustomerName, 0, 4);
 
         txtNewCustomerEmail = new TextField();
-        grid.add(txtNewCustomerEmail, 0, 4);
+        grid.add(txtNewCustomerEmail, 0, 6);
+
+        txtNewCustomerAddrStNo = new TextField();
+        grid.add(txtNewCustomerAddrStNo, 0, 8);
+
+        txtNewCustomerAddrStName = new TextField();
+        grid.add(txtNewCustomerAddrStName, 0, 10);
+
+        txtNewCustomerAddrSuburb = new TextField();
+        grid.add(txtNewCustomerAddrSuburb, 0, 12);
+
+        txtNewCustomerAddrPostcode = new TextField();
+        grid.add(txtNewCustomerAddrPostcode, 0, 14);
 
         MagSupplements = new ListView<String>();
         MagSupplements.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         MagSupplements.setItems(FXCollections.observableArrayList(magazine.getSupplementsName()));
 
-        grid.add(MagSupplements, 0, 6);
+        grid.add(MagSupplements, 0, 16);
 
-        // GridPane subGrid = new GridPane();
-        // subGrid.setHgap(20);
-        // chkNewCustomerType = new CheckBox("Paying");
-        // subGrid.add(chkNewCustomerType, 0, 0);
+        rbNotPaying.setOnAction(e -> {
+            if (rbNotPaying.isSelected()) {
+
+                MagPayingCustomers = new ListView<String>();
+                MagPayingCustomers.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+                MagPayingCustomers.setItems(FXCollections.observableArrayList(magazine.getPayingCusName()));
+
+                grid.add(lblPayingCuss, 0, 18);
+
+                grid.add(MagPayingCustomers, 1, 18);
+
+            }
+        });
+
+        rbPaying.setOnAction(e -> {
+            if (rbPaying.isSelected()) {
+                // remove lbPayingCuss and MagPayingCustomers
+                grid.getChildren().remove(MagPayingCustomers);
+                grid.getChildren().remove(lblPayingCuss);
+
+            }
+        });
+
         btnCreateNewCustomer = new Button("Create");
-        // btnCreateNewCustomer.setDisable(true);
         btnCreateNewCustomer.setOnAction(btnNewCustomerCreate);
-        grid.add(btnCreateNewCustomer, 0, 7);
-
-        // grid.add(subGrid, 0, 7);
+        grid.add(btnCreateNewCustomer, 0, 20);
         return grid;
     }
 
@@ -356,7 +544,6 @@ public class Assignment2 extends Application {
         grid.add(txtSuppName, 0, 2);
         txtSuppCost = new TextField();
         grid.add(txtSuppCost, 0, 4);
-
 
         btnCreateNewSupplement = new Button("Create");
 
@@ -434,36 +621,14 @@ public class Assignment2 extends Application {
 
     }
 
-    EventHandler<ActionEvent> btnEditModeClicked = new EventHandler<ActionEvent>() {
-        public void handle(ActionEvent event) {
-            root.setLeft(createCustomerPaneVBox());
-            root.setRight(null);
-        }
-    };
-
-    EventHandler<ActionEvent> btnViewModeClicked = new EventHandler<ActionEvent>() {
-        public void handle(ActionEvent event) {
-            root.setLeft(ViewOnlyPane());
-            root.setRight(null);
-        }
-    };
-
-    EventHandler<ActionEvent> btnCreateModeClicked = new EventHandler<ActionEvent>() {
-        public void handle(ActionEvent event) {
-            root.setLeft(createNewCustomerPaneVBox());
-            root.setRight(createNewSupplementPaneVBox());
-            
-        }
-    };
-
     public GridPane headingPane(Text lblHeading) {
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(0, 10, 0, 10));
 
-        lblHeading = new Text("Welcome to the Supplement Magazine");
-        lblHeading.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        // lblHeading = new Text("Welcome to the Vouge Magazine");
+        // lblHeading.setFont(Font.font("Arial", FontWeight.BOLD, 18));
         grid.add(lblHeading, 0, 0);
 
         grid.add(chooseModePane(), 0, 1);
@@ -481,10 +646,12 @@ public class Assignment2 extends Application {
         lblHeading = new Text("Magazine Service Information System");
         lblHeading.setFont(Font.font("Arial", FontWeight.BOLD, 20));
 
+        magazine.getMagazine().setTitle("Vouge");
+
         root.setTop(headingPane(lblHeading));
         root.setBottom(openSavePane);
 
-        scene = new Scene(root, 1000, 600);
+        scene = new Scene(root, 1200, 900);
 
         primaryStage.setTitle("Magazine Service");
         primaryStage.setScene(scene);

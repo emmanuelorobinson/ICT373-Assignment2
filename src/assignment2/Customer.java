@@ -23,6 +23,7 @@ public class Customer implements Serializable {
     private int customerId;
     private String name;
     private String email;
+    private Address address;
 
     /**
      * Default constructor for Customer
@@ -31,6 +32,7 @@ public class Customer implements Serializable {
         this.customerId = id.incrementAndGet();
         this.name = "invalid name";
         this.email = "invalidEmail@exmple.com";
+        this.address = new Address();
     }
 
     /**
@@ -43,6 +45,7 @@ public class Customer implements Serializable {
         this.customerId = id.incrementAndGet();
         this.name = name.toLowerCase();
         this.email = email.toLowerCase();
+        this.address = new Address();
     }
 
     /**
@@ -118,7 +121,102 @@ public class Customer implements Serializable {
         return false;
     }
 
+    //gettes and setters for address
+    /**
+     * Getter for customer address
+     * 
+     * @return
+     */
+    public Address getAddress() {
+        return address;
+    }
+
+    /**
+     * Setter for customer address
+     * 
+     * @param address
+     * @return
+     */
+
+    public boolean setAddress(Address address) {
+        if (address != null) {
+            this.address = address;
+            return true;
+        }
+        return false;
+    }
+
     public String printCustomer() {
         return "Customer ID: " + customerId + "\n" + "Name: " + name + "\n" + "Email: " + email;
+    }
+
+    public class Address implements Serializable {
+
+        int streetNo = 0;
+        String streetName = "Invalid Street Name";
+        String suburb = "Invalid Suburb";
+        int postcode = 0;
+
+
+        /**
+         * Default constructor for Address
+         */
+        public Address() {
+            this.streetNo = 0;
+            this.streetName = "Invalid Street Name";
+            this.suburb = "Invalid Suburb";
+            this.postcode = 0;
+        }
+
+        /**
+         * Non-Default constructor for Address
+         */
+
+        public Address(int streetNo, String streetName, String suburb, int postcode) {
+            this.streetNo = streetNo;
+            this.streetName = streetName.toLowerCase();
+            this.suburb = suburb.toLowerCase();
+            this.postcode = postcode;
+        }
+
+        //getters and setters
+        public int getStreetNo() {
+            return streetNo;
+        }
+
+        public void setStreetNo(int streetNo) {
+            this.streetNo = streetNo;
+        }
+
+        public String getStreetName() {
+            return streetName;
+        }
+
+        public void setStreetName(String streetName) {
+            this.streetName = streetName.toLowerCase();
+        }
+
+        public String getSuburb() {
+            return suburb;
+        }
+
+        public void setSuburb(String suburb) {
+            this.suburb = suburb.toLowerCase();
+        }
+
+        public int getPostcode() {
+            return postcode;
+        }
+
+        public void setPostcode(int postcode) {
+            this.postcode = postcode;
+        }
+
+        public String printAddress() {
+            return "Street Number: " + streetNo + "\n" + "Street Name: " + streetName + "\n" + "Suburb: " + suburb + "\n"
+                    + "Postcode: " + postcode;
+        }
+
+
     }
 }
