@@ -674,7 +674,16 @@ public class Assignment2 extends Application {
                 viewSuppDetails(s);
             });
 
+            Button btnDelete = new Button("Delete");
+            btnDelete.setOnAction(e -> {
+                magazine.deleteSupplement(s);
+                grid.getChildren().remove(t);
+                grid.getChildren().remove(btn);
+                grid.getChildren().remove(btnDelete);
+            });
+
             grid.add(btn, 1, count);
+            grid.add(btnDelete, 2, count);
             count++;
         }
 
@@ -694,6 +703,14 @@ public class Assignment2 extends Application {
             Button btn = new Button("View");
             btn.setOnAction(e -> {
                 viewCustomerDetails(c);
+            });
+
+            Button btnDelete = new Button("Delete");
+            btnDelete.setOnAction(e -> {
+                magazine.deleteCustomer(c);
+                grid.getChildren().remove(t);
+                grid.getChildren().remove(btn);
+                grid.getChildren().remove(btnDelete);
             });
 
             grid.add(btn, 1, count);

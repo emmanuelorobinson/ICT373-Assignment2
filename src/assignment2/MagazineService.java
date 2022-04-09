@@ -184,4 +184,12 @@ public class MagazineService implements Serializable {
 
         return bill;
     }
+
+    public void deleteSupplement(String s){
+        magazine.deleteSupplement(s);
+    }
+
+    public void deleteCustomer(String s){
+        magazine.deleteCustomer(s);
+    }
 }

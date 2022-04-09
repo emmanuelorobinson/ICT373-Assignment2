@@ -273,4 +273,22 @@ public class Magazine implements Serializable {
         }
         return null;
     }
+
+    public void deleteSupplement(String s) {
+        for (Supplement supp : supplementList) {
+            if (supp.getName().equals(s)) {
+                supplementList.remove(supp);
+            }
+        }
+
+    }
+
+    public void deleteCustomer(String s) {
+        for (Customer cus : customerList) {
+            if (cus.getName().equals(s)) {
+                customerList.remove(cus);
+            }
+        }
+
+    }
 }
