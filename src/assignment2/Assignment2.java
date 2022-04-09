@@ -5,6 +5,7 @@
  */
 package assignment2;
 
+import java.util.ConcurrentModificationException;
 import java.util.List;
 
 import javax.swing.event.ChangeListener;
@@ -675,15 +676,22 @@ public class Assignment2 extends Application {
             });
 
             Button btnDelete = new Button("Delete");
+
             btnDelete.setOnAction(e -> {
-                magazine.deleteSupplement(s);
+                try {
+                    magazine.deleteSupplement(s);
+                } catch (ConcurrentModificationException ex) {
+                   
+                }
                 grid.getChildren().remove(t);
                 grid.getChildren().remove(btn);
                 grid.getChildren().remove(btnDelete);
+
             });
 
             grid.add(btn, 1, count);
             grid.add(btnDelete, 2, count);
+
             count++;
         }
 
@@ -707,13 +715,21 @@ public class Assignment2 extends Application {
 
             Button btnDelete = new Button("Delete");
             btnDelete.setOnAction(e -> {
-                magazine.deleteCustomer(c);
+                try {
+                    magazine.deleteCustomer(c);
+                } catch (Exception ex) {
+                    //TODO: handle exception
+                    root.setLeft(ViewOnlyPane());
+                }
+                
                 grid.getChildren().remove(t);
                 grid.getChildren().remove(btn);
                 grid.getChildren().remove(btnDelete);
+                
             });
 
             grid.add(btn, 1, count);
+            grid.add(btnDelete, 2, count);
 
             count++;
         }
