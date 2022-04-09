@@ -8,8 +8,6 @@ package assignment2;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 
-import javax.swing.event.ChangeListener;
-
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -98,10 +96,12 @@ public class Assignment2 extends Application {
 
             // add supplement to magazine
             if (magazine.getMagazine().addSupplement(s)) {
+                alert.setHeaderText("Supplement Details");
                 alert.setAlertType(AlertType.INFORMATION);
                 alert.setContentText("Supplement added to magazine");
                 alert.showAndWait();
             } else {
+                alert.setHeaderText("Supplement Details");
                 alert.setAlertType(AlertType.ERROR);
                 alert.setContentText("Supplement not added to magazine");
                 alert.showAndWait();
@@ -116,15 +116,23 @@ public class Assignment2 extends Application {
 
             String name = txtNewCustomerName.getText() != "" ? txtNewCustomerName.getText() : "Jon";
             String email = txtNewCustomerEmail.getText() != "" ? txtNewCustomerEmail.getText() : "email@email.com";
-            int addrStNo = txtNewCustomerAddrStNo.getText() != "" ? Integer.parseInt(txtNewCustomerAddrStNo.getText())
-                    : 1;
+            int addrStNo = 0;
+            int addrPostcode = 0;
+
+            try {
+                addrStNo = txtNewCustomerAddrStNo.getText() != "" ? Integer.parseInt(txtNewCustomerAddrStNo.getText())
+                        : 1;
+                addrPostcode = txtNewCustomerAddrPostcode.getText() != ""
+                        ? Integer.parseInt(txtNewCustomerAddrPostcode.getText())
+                        : 2000;
+            } catch (NumberFormatException ex) {
+                addrStNo = 1;
+            }
+
             String addrStName = txtNewCustomerAddrStName.getText() != "" ? txtNewCustomerAddrStName.getText()
                     : "Street";
             String addrSuburb = txtNewCustomerAddrSuburb.getText() != "" ? txtNewCustomerAddrSuburb.getText()
                     : "Suburb";
-            int addrPostcode = txtNewCustomerAddrPostcode.getText() != ""
-                    ? Integer.parseInt(txtNewCustomerAddrPostcode.getText())
-                    : 2000;
 
             ObservableList<String> supplements;
 
@@ -134,7 +142,25 @@ public class Assignment2 extends Application {
             System.out.println(subscripedTo);
 
             if (rbNotPaying.isSelected()) {
+
+                ObservableList<String> payingCustomers;
+                payingCustomers = MagPayingCustomers.getSelectionModel().getSelectedItems();
+                List<String> paying = payingCustomers.subList(0, payingCustomers.size());
+
                 c = new AssociateCustomer(name, email);
+                AssociateCustomer ac = (AssociateCustomer) c;
+
+                // find paying customers by name
+                for (String s : paying) {
+
+                    Customer p = magazine.getCustomer(s);
+                    PayingCustomer pc = (PayingCustomer) p;
+                    ac.setPayingCustomer(pc);
+
+                }
+
+                c = ac;
+
             } else {
                 c = new PayingCustomer(name, email, "c");
 
@@ -169,6 +195,48 @@ public class Assignment2 extends Application {
         }
     };
 
+    EventHandler<ActionEvent> btnUpdateCustomerDetails = new EventHandler<ActionEvent>() {
+        public void handle(ActionEvent e) {
+
+            Customer c;
+
+            String name = txtCustomerName.getText() != "" ? txtCustomerName.getText() : "unamed";
+            String email = txtCustomerEmail.getText() != "" ? txtCustomerEmail.getText() : "email@email.com";
+            int addrStNo = 0;
+            int addrPostcode = 0;
+
+            try {
+                addrStNo = txtCustomerAddrStNo.getText() != "" ? Integer.parseInt(txtCustomerAddrStNo.getText())
+                        : 1;
+                addrPostcode = txtCustomerAddrPostcode.getText() != ""
+                        ? Integer.parseInt(txtCustomerAddrPostcode.getText())
+                        : 2000;
+            } catch (NumberFormatException ex) {
+                addrStNo = 1;
+            }
+
+            String addrStName = txtCustomerAddrStName.getText() != "" ? txtCustomerAddrStName.getText() : "Street";
+
+            String addrSuburb = txtCustomerAddrSuburb.getText() != "" ? txtCustomerAddrSuburb.getText() : "Suburb";
+
+            String name2 = (String) combo_box.getValue();
+
+            System.out.println(name2);
+
+            c = magazine.getMagazine().getCustomerByName(name2);
+            c.setName(name);
+            c.setEmail(email);
+            c.getAddress().setStreetNo(addrStNo);
+            c.getAddress().setStreetName(addrStName);
+            c.getAddress().setSuburb(addrSuburb);
+            c.getAddress().setPostcode(addrPostcode);
+
+            Customer newC = c;
+
+            magazine.getMagazine().addCustomer(newC);
+        }
+    };
+
     EventHandler<ActionEvent> comboSelected = new EventHandler<ActionEvent>() {
         public void handle(ActionEvent e) {
             customer = magazine.getMagazine().getCustomerByName(combo_box.getValue() + "");
@@ -192,17 +260,6 @@ public class Assignment2 extends Application {
 
             textEnrolled.setText("...loading supplements...");
             textEnrolled.setText(magazine.getSupplements(customer.getCustomerId()));
-
-            if (customer instanceof AssociateCustomer) {
-                textPayingCustomers.setText("...loading paying customers...");
-                textPayingCustomers.setText(magazine.getPayingCustomerString(customer.getCustomerId()));
-            }
-
-            if (customer instanceof PayingCustomer) {
-                rbPaying.setSelected(true);
-            } else {
-                rbNotPaying.setSelected(true);
-            }
 
         }
     };
@@ -269,9 +326,15 @@ public class Assignment2 extends Application {
             magazine.getMagazine().setTitle(name);
             magazine.getMagazine().setWeeklyCost(cost);
 
+            String title = name.substring(0, 1).toUpperCase() + name.substring(1);
+            lblHeading.setText(title);
+
+            alert.setHeaderText("Magazine Details");
             alert.setContentText("Magazine details updated");
             alert.setAlertType(AlertType.INFORMATION);
             alert.show();
+
+            root.setTop(headingPane(lblHeading));
 
         }
     };
@@ -361,12 +424,9 @@ public class Assignment2 extends Application {
         grid.setVgap(10);
         grid.setPadding(new Insets(0, 10, 0, 10));
 
-        btnNewCustomer = new Button("New");
-        btnNewCustomer.setOnAction(btnNewCustomerClicked);
-        grid.add(btnNewCustomer, 1, 0);
-
         btnUpdateCustomer = new Button("Update");
-        grid.add(btnUpdateCustomer, 1, 1);
+        btnUpdateCustomer.setOnAction(btnUpdateCustomerDetails);
+        grid.add(btnUpdateCustomer, 1, 0);
 
         return grid;
     }
@@ -640,7 +700,7 @@ public class Assignment2 extends Application {
 
             alert.setContentText("Customer Type: Associate Customer\n" + "Customer Name: " + cus.getName() + "\n"
                     + "Customer Email: " + cus.getEmail() + "\n"
-                    + "\nCustomer Address: \n" + cus.getAddress() + "\n\n" + "Customer Supplements in: "
+                    + "\nCustomer Address: \n" + cus.getAddress().printAddress() + "\n\n" + "Customer Supplements in: "
                     + magazine.getSupplements(cus.getCustomerId()) + "\n"
                     + "\n" + "Customers' Paying Customer: "
                     + newcus.getPayingCustomer().getName() + "\n\n"
@@ -681,8 +741,15 @@ public class Assignment2 extends Application {
                 try {
                     magazine.deleteSupplement(s);
                 } catch (ConcurrentModificationException ex) {
-                   
+                    root.setLeft(ViewOnlyPane());
                 }
+
+                alert.setAlertType(AlertType.INFORMATION);
+                alert.setTitle("Supplement Deleted");
+                alert.setHeaderText("Supplement Deleted");
+                alert.setContentText("Supplement has been deleted");
+                alert.showAndWait();
+
                 grid.getChildren().remove(t);
                 grid.getChildren().remove(btn);
                 grid.getChildren().remove(btnDelete);
@@ -718,14 +785,19 @@ public class Assignment2 extends Application {
                 try {
                     magazine.deleteCustomer(c);
                 } catch (Exception ex) {
-                    //TODO: handle exception
                     root.setLeft(ViewOnlyPane());
                 }
-                
+
+                alert.setAlertType(AlertType.INFORMATION);
+                alert.setTitle("Customer Deleted");
+                alert.setHeaderText("Customer Deleted");
+                alert.setContentText("Customer Deleted");
+                alert.showAndWait();
+
                 grid.getChildren().remove(t);
                 grid.getChildren().remove(btn);
                 grid.getChildren().remove(btnDelete);
-                
+
             });
 
             grid.add(btn, 1, count);
